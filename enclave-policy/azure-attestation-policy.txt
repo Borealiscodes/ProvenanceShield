@@ -1,0 +1,20 @@
+version=1.0;
+
+authorizationrules 
+{
+    c:[type=="x-ms-isolation-tee", value =~ "amd-sev-snp|intel-tdx"] => permit();
+    c:[type=="x-ms-sevsnp-is-debuggable", value==false] => permit();
+    c:[type=="x-ms-tdx-is-debuggable", value==false] => permit();
+    
+    // Core Invariant Gate: Dynamically locked to your real v3.0.0 MRENCLAVE binary signature hash
+    c:[type=="x-ms-sevsnp-mrenclave", value=="e0a24538626b2bf46fa5e194ae6de0e82f2b8b3fca04c0730b0cc77067a2d68e"] => permit();
+};
+
+issuancerules 
+{
+    c:[type=="x-ms-isolation-tee"] => issue(claim=c);
+    c:[type=="x-ms-sevsnp-mrenclave"] => issue(claim=c);
+    
+    // Inject our custom non-military purpose assertion string into the final JWT token
+    => issue(type="x-ms-provenanceshield-purpose", value="Non-Military-Defensive-Sandbox");
+};
