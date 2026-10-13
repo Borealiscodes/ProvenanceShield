@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "anyOf": [
+    {
+      "authority": "https://azure.net",
+      "allOf": [
+        {
+          "claim": "x-ms-isolation-tee",
+          "equals": "amd-sev-snp"
+        },
+        {
+          "claim": "x-ms-sevsnp-is-debuggable",
+          "equals": "false"
+        },
+        {
+          "claim": "x-ms-sevsnp-mrenclave",
+          "equals": "e0a24538626b2bf46fa5e194ae6de0e82f2b8b3fca04c0730b0cc77067a2d68e"
+        },
+        {
+          "claim": "x-ms-provenanceshield-purpose",
+          "equals": "Non-Military-Defensive-Sandbox"
+        }
+      ]
+    }
+  ]
+}
