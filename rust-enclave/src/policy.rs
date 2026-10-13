@@ -32,7 +32,8 @@ impl PolicyEnforcementEngine {
 
         for keyword in prohibited_keywords {
             if env_vars.keys().any(|key| key.to_uppercase().contains(keyword)) {
-                return PolicyDecision.DenyExecution(
+                // Fixed: Prepend absolute double-colon enum scope syntax
+                return PolicyDecision::DenyExecution(
                     "CRITICAL POLICY VIOLATION: Prohibited military deployment variable detected."
                 );
             }
@@ -43,13 +44,15 @@ impl PolicyEnforcementEngine {
         match env_vars.get("PROVENANCESHIELD_ENVIRONMENT_MODE") {
             Some(value) => {
                 if value != "Non-Military-Defensive-Sandbox" {
-                    return PolicyDecision.DenyExecution(
+                    // Fixed: Prepend absolute double-colon enum scope syntax
+                    return PolicyDecision::DenyExecution(
                         "POLICY DENIAL: Workspace mode claim does not match non-military constraints."
                     );
                 }
             }
             None => {
-                return PolicyDecision.DenyExecution(
+                // Fixed: Prepend absolute double-colon enum scope syntax
+                return PolicyDecision::DenyExecution(
                     "POLICY DENIAL: Mandatory environmental purpose assertion variable is missing."
                 );
             }
@@ -59,13 +62,15 @@ impl PolicyEnforcementEngine {
         // Blocks execution if the platform is configured for unsafe runtime modification
         if let Some(debug_flag) = env_vars.get("PROVENANCESHIELD_ALLOW_UNRESTRICTED_DEBUG") {
             if debug_flag.to_lowercase() == "true" && self.strictly_non_military {
-                return PolicyDecision.DenyExecution(
+                // Fixed: Prepend absolute double-colon enum scope syntax
+                return PolicyDecision::DenyExecution(
                     "SECURITY EXCLUSION: Un-isolated debugging hooks are strictly forbidden in this mode."
                 );
             }
         }
 
         println!("[SUCCESS] System environment cleared. Workspace meets civil protection utility bounds.");
-        PolicyDecision.PermitExecution
+        // Fixed: Prepend absolute double-colon enum scope syntax
+        PolicyDecision::PermitExecution
     }
 }
