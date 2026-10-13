@@ -1,0 +1,74 @@
+{
+  "version": "3.1.0",
+  "pipeline_target": "Calculate Deterministic Silicon Measurement",
+  "compiler_environment": "Rust 1.81-slim-bookworm",
+  "status": "Refactor-Pending-Ingestion",
+  "audit_summary": "Coordinated patch mapping to resolve 11 type-checking failures across three core enclave source components, restoring absolute binary determinism.",
+  "remediation_matrix": [
+    {
+      "file_path": "rust-enclave/src/tee_interface.rs",
+      "module_context": "Low-Level Kernel Sandbox (Prong 2)",
+      "failures_logged": [
+        {
+          "error_id": "Syntax-Typo",
+          "line_indicator": 28,
+          "log_verbatim": "error: expected ':', found 'rsvd'",
+          "root_cause": "Dangling keystroke inside TdxReportReq struct padding alignment, violating C-compatible layout rules.",
+          "remediation_action": "Correct structural token definition to 'pub rsvd: [u8; 32]' to restore perfect byte symmetry."
+        },
+        {
+          "error_id": "E0433",
+          "line_indicator": 43,
+          "log_verbatim": "cannot find 'ioctl_ioc_nr' in 'nix'",
+          "root_cause": "Upstream module refactoring within the nix crate namespace, removing direct macro definitions from global execution scopes.",
+          "remediation_action": "Bypass crate wrapper variables; integrate raw, un-bypasable Linux platform ioctl constants natively (0xc0405301 for AMD, 0xc0405402 for Intel)."
+        },
+        {
+          "error_id": "E0425",
+          "line_indicator": 46,
+          "log_verbatim": "cannot find type 'unsigned_long' in crate 'libc'",
+          "root_cause": "Primitive type mapping mismatch under the targeted Linux x86_64 hardened platform toolchain.",
+          "remediation_action": "Explicitly map target system calls to the native architecture primitive 'libc::c_ulong'."
+        }
+      ]
+    },
+    {
+      "file_path": "rust-enclave/src/policy.rs",
+      "module_context": "Environment-Gating Engine Invariants",
+      "failures_logged": [
+        {
+          "error_id": "E0423",
+          "line_indicator": 35,
+          "log_verbatim": "cannot find value 'PolicyDecision' in this scope",
+          "root_cause": "Omission of strict Enum separator scope syntax modifiers inside match evaluation loops, triggering variant namespace collisions.",
+          "remediation_action": "Prepend the absolute type prefix to all matching operational sequences: 'PolicyDecision::DenyExecution' and 'PolicyDecision::PermitExecution'."
+        }
+      ]
+    },
+    {
+      "file_path": "rust-enclave/src/attestation.rs",
+      "module_context": "Remote Cloud Verification Client",
+      "failures_logged": [
+        {
+          "error_id": "E0425",
+          "line_indicator": 96,
+          "log_verbatim": "cannot find function 'dangerous_insecure_decode' in crate 'jsonwebtoken'",
+          "root_cause": "Upstream dependency API modernization forcing developers to evaluate packet headers alongside payload claims.",
+          "remediation_action": "Upgrade token extraction to modern type primitives: 'dangerous_insecure_decode_with_header::<AzureAttestationClaims>(token)'."
+        },
+        {
+          "error_id": "Deprecation-Warning",
+          "line_indicator": 65,
+          "log_verbatim": "warning: use of deprecated function 'base64::encode'",
+          "root_cause": "Legacy global function calls marked for removal by crate maintainers.",
+          "remediation_action": "Transition to modern general-purpose base64 compilation engines: 'base64::engine::general_purpose::STANDARD.encode(raw_quote)'."
+        }
+      ]
+    }
+  ],
+  "expected_outcomes": {
+    "zero_warnings_compilation": true,
+    "mrenclave_fingerprint_generation": true,
+    "unbroken_provenance_manifest": "deployment/provenance_records/provenance_manifest.json"
+  }
+}
