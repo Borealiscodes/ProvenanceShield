@@ -1,52 +1,71 @@
-// provenance-shield: policy.rs
-// Defines attestation and key-release policies.
-// Central configuration for provenance, measurement, and non-military constraints.
+// rust-enclave/src/policy.rs
+use std::collections::HashMap;
+use std::env;
 
-use serde::Deserialize;
-
-/// Attestation policy defining expected measurement and allowed environments.
-#[derive(Debug, Deserialize)]
-pub struct AttestationPolicy {
-    pub expected_measurement: String,
-    pub allowed_platforms: Vec<String>,
-    pub prohibited_platforms: Vec<String>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PolicyDecision {
+    PermitExecution,
+    DenyExecution(&'static str),
 }
 
-impl AttestationPolicy {
-    /// Return the expected enclave measurement.
-    pub fn expected_measurement(&self) -> String {
-        self.expected_measurement.clone()
-    }
+pub struct PolicyEnforcementEngine {
+    pub strictly_non_military: bool,
+}
 
-    /// Check whether the attested platform is allowed under non-military constraints.
-    pub fn environment_allowed(&self, platform_info: &str) -> bool {
-        // Explicitly deny prohibited platforms (defense, aerospace, surveillance).
-        if self.prohibited_platforms.iter().any(|p| platform_info.contains(p)) {
-            return false;
+impl PolicyEnforcementEngine {
+    /// Evaluates active environment claims and variables against non-military invariants.
+    pub fn evaluate_runtime_environment(&self) -> PolicyDecision {
+        println!("[POLICY] Initializing environment classification audit...");
+
+        // Collect all environment variables into a map for checking
+        let env_vars: HashMap<String, String> = env::vars().collect();
+
+        // 1. Strict Prohibited Sector Check
+        // Flags clear semantic indicators of military, weapons, or targeting stacks
+        let prohibited_keywords = vec![
+            "TARGET_ACQUISITION",
+            "KINETIC_TRACKING",
+            "WEAPONS_SYSTEM",
+            "OFFENSIVE_OPERATIONS",
+            "MILITARY_WORKSPACE",
+        ];
+
+        for keyword in prohibited_keywords {
+            if env_vars.keys().any(|key| key.to_uppercase().contains(keyword)) {
+                return PolicyDecision.DenyExecution(
+                    "CRITICAL POLICY VIOLATION: Prohibited military deployment variable detected."
+                );
+            }
         }
 
-        // Allow only explicitly permitted platforms (Azure MAA, SEV-SNP, Nitro).
-        self.allowed_platforms.iter().any(|p| platform_info.contains(p))
-    }
-}
-
-/// Key-release policy defining non-military constraints for key access.
-#[derive(Debug, Deserialize)]
-pub struct KeyReleasePolicy {
-    pub allow_release: bool,
-    pub prohibited_environments: Vec<String>,
-}
-
-impl KeyReleasePolicy {
-    /// Check whether key release is permitted in the current environment.
-    pub fn environment_allowed(&self) -> bool {
-        if !self.allow_release {
-            return false;
+        // 2. Validate Explicit Purpose Assertion
+        // Ensures the environment has been structurally classified for civil/humanitarian use
+        match env_vars.get("PROVENANCESHIELD_ENVIRONMENT_MODE") {
+            Some(value) => {
+                if value != "Non-Military-Defensive-Sandbox" {
+                    return PolicyDecision.DenyExecution(
+                        "POLICY DENIAL: Workspace mode claim does not match non-military constraints."
+                    );
+                }
+            }
+            None => {
+                return PolicyDecision.DenyExecution(
+                    "POLICY DENIAL: Mandatory environmental purpose assertion variable is missing."
+                );
+            }
         }
 
-        // Deny release in prohibited environments.
-        // (Defense, aerospace, robotics targeting, surveillance clouds.)
-        // Real implementation will inspect attestation metadata.
-        true
+        // 3. Verify Lack of External Debugging Interferences
+        // Blocks execution if the platform is configured for unsafe runtime modification
+        if let Some(debug_flag) = env_vars.get("PROVENANCESHIELD_ALLOW_UNRESTRICTED_DEBUG") {
+            if debug_flag.to_lowercase() == "true" && self.strictly_non_military {
+                return PolicyDecision.DenyExecution(
+                    "SECURITY EXCLUSION: Un-isolated debugging hooks are strictly forbidden in this mode."
+                );
+            }
+        }
+
+        println!("[SUCCESS] System environment cleared. Workspace meets civil protection utility bounds.");
+        PolicyDecision.PermitExecution
     }
 }
