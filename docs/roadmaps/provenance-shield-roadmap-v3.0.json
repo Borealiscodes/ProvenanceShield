@@ -1,36 +1,36 @@
 {
-  "version": "3.0",
+  "version": "3.0.0",
   "altitude": "A8 → A10",
   "mode": "production_grade",
-  "description": "Full confidential-computing roadmap integrating all refactors required to upgrade v2.0 scaffolding into a provenance-locked, non-military, attestation-gated boundary system.",
+  "description": "Production architecture specs for upgrading the ProvenanceShield framework into a hardware-attested, non-military, confidentiality-isolated boundary system.",
   "objectives": {
     "primary": [
-      "Upgrade all Rust enclave modules to production-grade confidential computing",
-      "Integrate real attestation providers (Azure MAA, SEV-SNP, Nitro, TDX)",
-      "Bind sealed keys to enclave measurement and non-military policy",
-      "Implement provenance-locked CI/CD measurement pipeline",
-      "Deploy chain-of-custody logging with hash-chain integrity",
-      "Finalize Python manifold engine with HRD-aligned cognition operators"
+      "Refactor Rust enclave modules into an production-grade hardware validation sandbox",
+      "Implement multi-provider TEE attestation (AMD SEV-SNP, Intel TDX, AWS Nitro)",
+      "Bind sealed-key release directly to silicon measurement states and ECHR compliance metrics",
+      "Deploy a provenance-locked CI/CD build pipeline to generate static code measurements",
+      "Establish a tamper-evident forensic log chain using sequential cryptographic hashing",
+      "Finalize the Python data layer with structure-preserving manifold cognition operators"
     ],
     "secondary": [
-      "Ensure all modules enforce non-military constraints",
-      "Ensure all telemetry processing is provenance-gated",
-      "Ensure all runtime execution is attestation-bound",
-      "Ensure all logs are tamper-evident and timestamped"
+      "Enforce deterministic runtime refusal in unauthorized cloud environments",
+      "Isolate all high-risk telemetry parsing within encrypted memory boundaries",
+      "Eliminate unverified third-party compiler dependencies from the attestation pipeline",
+      "Verify that all forensic outputs carry immutable RFC 3161 timestamp assertions"
     ]
   },
   "milestones": [
     {
       "id": "M1",
-      "name": "Attestation v3.0",
-      "goal": "Replace placeholder attestation with real TEE integration",
+      "name": "Hardware Attestation Subsystem",
+      "goal": "Replace software mock functions with native silicon TEE integration",
       "deliverables": [
-        "Azure MAA client integration",
-        "SEV-SNP attestation report parser",
-        "Nitro attestation document verifier",
-        "TDX quote validator",
-        "Signature verification (ECDSA/Ed25519)",
-        "Platform-claim parsing and non-military gating"
+        "Native AMD SEV-SNP guest quote parsing via /dev/sev-guest devicelist",
+        "Intel TDX trust domain validation via /dev/tdx-guest architecture hooks",
+        "AWS Nitro Enclave NSM (Nitro Security Module) SDK integration",
+        "Automated Azure MAA (Microsoft Azure Attestation) token verification client",
+        "Hardware-bound signature verification using Ed25519 primitives",
+        "Platform-claim gating to enforce non-military environment parameters"
       ],
       "refactors": [
         "rust-enclave/src/attestation.rs",
@@ -39,14 +39,14 @@
     },
     {
       "id": "M2",
-      "name": "Provenance Enforcement v3.0",
-      "goal": "Bind execution to enclave identity and measurement",
+      "name": "Provenance Enforcement Subsystem",
+      "goal": "Bind execution parameters to strict runtime code measurements",
       "deliverables": [
-        "CI/CD measurement generation pipeline",
-        "SHA-256 measurement hashing",
-        "Measurement lineage hash-chain",
-        "Provenance-bound runtime enforcement",
-        "Policy-driven environment gating"
+        "CI/CD build action for deterministic MRENCLAVE hash generation",
+        "SHA-256 measurement matching inside the enclave initialization sequence",
+        "Automated provenance history hash-chain validation loop",
+        "Runtime enforcement engine to block un-measured dynamic forks",
+        "Policy-driven workspace gating based on immutable environment variables"
       ],
       "refactors": [
         "rust-enclave/src/provenance.rs",
@@ -55,14 +55,14 @@
     },
     {
       "id": "M3",
-      "name": "Sealed Key Boundary v3.0",
-      "goal": "Implement real sealed-key operations bound to enclave measurement",
+      "name": "Sealed Key Boundary",
+      "goal": "Implement silicon-bound cryptographic operations using hardware security modules",
       "deliverables": [
-        "Enclave-bound key sealing/unsealing",
-        "AES-GCM or ChaCha20-Poly1305 decryption",
-        "Integration with Azure Key Vault / AWS KMS enclave mode",
-        "Key-release gating via attestation metadata",
-        "Non-military key-release constraints"
+        "Hardware-rooted local key sealing bound to the current platform measurement",
+        "Enclave-isolated symmetric decryption via ChaCha20-Poly1305 primitives",
+        "Secure Key Release integration with Azure Key Vault and AWS KMS Enclave Mode",
+        "Attestation-metadata-gated key delivery protocol",
+        "Non-negotiable non-military usage constraints injected into key policies"
       ],
       "refactors": [
         "rust-enclave/src/key_release.rs"
@@ -70,14 +70,14 @@
     },
     {
       "id": "M4",
-      "name": "Manifold Cognition Engine v3.0",
-      "goal": "Upgrade Python manifold engine to HRD-aligned cognition",
+      "name": "Manifold Cognition Engine",
+      "goal": "Deploy the structure-preserving telemetry parser within the secure sandbox",
       "deliverables": [
-        "Real decryptor using enclave-released keys",
-        "Safe manifold embedding operators",
-        "HRD-aligned telemetry processing",
-        "Provenance token integration",
-        "Chain-of-custody logging hooks"
+        "Encrypted memory data receiver using enclave-released symmetric keys",
+        "Strict manifold embedding operators implementing coordinate invariants",
+        "Human Rights Defender (HRD) target telemetry classification modules",
+        "Cryptographic provenance token ingestion validator",
+        "Internal hooks for automated forensic logging callbacks"
       ],
       "refactors": [
         "python-engine/manifold_engine.py"
@@ -85,13 +85,13 @@
     },
     {
       "id": "M5",
-      "name": "Provenance Token Layer v3.0",
-      "goal": "Implement attestation-bound session tokens",
+      "name": "Provenance Token Layer",
+      "goal": "Construct secure, short-lived attestation runtime assertions",
       "deliverables": [
-        "Token binding to enclave measurement",
-        "Non-military execution constraints",
-        "Token validation integrated with Rust attestation outcome",
-        "Replay protection and expiry"
+        "Session token generation cryptographically bound to the TEE boot hash",
+        "Invariants enforcement payload parsing inside data packets",
+        "Cross-layer verification linking the Python compute frame to the Rust boundary",
+        "Anti-replay protection using hardware nonces and strict expiry windows"
       ],
       "new_artifacts": [
         "python-engine/token_validation.py"
@@ -99,13 +99,13 @@
     },
     {
       "id": "M6",
-      "name": "Chain-of-Custody Logging v3.0",
-      "goal": "Implement tamper-evident logging for all telemetry",
+      "name": "Chain-of-Custody Ingestion Layer",
+      "goal": "Establish a tamper-evident forensic log trail for judicial accountability",
       "deliverables": [
-        "Hash-chained log blocks",
-        "RFC 3161 timestamping",
-        "Immutable log storage backend",
-        "Binding logs to provenance tokens"
+        "Sequential hash-chained logging where block N contains hash(block N-1)",
+        "RFC 3161 compliant timestamp integration via DER-encoded HTTP client requests",
+        "Immutable local output layout for preservation of violation evidence",
+        "Cryptographic binding linking all telemetry events to active enclave tokens"
       ],
       "new_artifacts": [
         "python-engine/secure_logging.py"
@@ -113,34 +113,34 @@
     },
     {
       "id": "M7",
-      "name": "Deployment Pipeline v3.0",
-      "goal": "Finalize confidential-compute deployment surfaces",
+      "name": "Confidential Deployment Automation",
+      "goal": "Build fully automated, repeatable compilation and isolation environments",
       "deliverables": [
-        "Measurement generation in CI/CD",
-        "Measurement verification at deployment",
-        "Enclave-aware Dockerfile",
-        "Confidential VM templates",
-        "Startup gated by attestation verification"
+        "Deterministic multi-stage build optimization in GitHub Actions workflows",
+        "Automated deployment validation script verifying hardware measurement integrity",
+        "Confidential-compute optimized Dockerfile with isolated base images",
+        "Terraform/ARM templates for launching hardened Confidential VMs",
+        "Enclave-aware boot daemon to refuse startup on un-attested infrastructure"
       ],
       "new_artifacts": [
-        "ci-cd/measurement_pipeline.yaml",
-        "docker/Dockerfile.enclave"
+        "deployment/ci-cd/measurement_pipeline.yaml",
+        "deployment/docker/Dockerfile.enclave"
       ]
     }
   ],
   "invariants": {
-    "non_military": true,
-    "provenance_locked_execution": true,
-    "attestation_gated_runtime": true,
-    "sealed_key_release_only": true,
-    "chain_of_custody_required": true
+    "non_military_execution_only": true,
+    "provenance_locked_runtime": true,
+    "attestation_gated_decryption": true,
+    "hardware_enclave_isolation": true,
+    "tamper_evident_chain_of_custody": true
   },
   "expected_outputs": [
-    "Production-grade enclave boundary",
-    "Provenance-locked Python manifold engine",
-    "Attestation-bound telemetry processing",
-    "Non-military constraint enforcement",
-    "Tamper-evident chain-of-custody logs",
-    "Confidential-compute deployment pipeline"
+    "Hardware-attested Rust sandbox enclave boundary",
+    "Provenance-locked Python manifold reasoning engine",
+    "Attestation-gated telemetry data processing stack",
+    "Algorithmically enforced non-military execution constraints",
+    "Judicial-grade, tamper-evident forensic chain logs",
+    "Zero-trust confidential-compute infrastructure pipeline"
   ]
 }
