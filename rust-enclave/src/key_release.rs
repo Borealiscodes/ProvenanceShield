@@ -1,54 +1,47 @@
-// provenance-shield: key_release.rs
-// Attestation-gated key release mechanism.
-// Ensures decryption keys only unlock inside verified, non-military enclaves.
-
-use anyhow::{Result, anyhow};
-use crate::attestation::AttestationOutcome;
-use crate::policy::KeyReleasePolicy;
-
-/// Represents a sealed key stored in the enclave or external KMS.
-/// The key is encrypted and bound to the enclave measurement.
-pub struct SealedKey {
-    pub encrypted_key: Vec<u8>,
-}
-
-/// Represents a decrypted key ready for use inside the enclave.
-pub struct ReleasedKey {
-    pub key: Vec<u8>,
-}
-
-/// Attempt to release a sealed key only if attestation and provenance checks pass.
-pub fn release_key(
-    sealed: &SealedKey,
-    attestation: &AttestationOutcome,
-    policy: &KeyReleasePolicy
-) -> Result<ReleasedKey> {
-
-    // 1. Attestation must be verified.
-    if !attestation.verified {
-        return Err(anyhow!(
-            "Key release denied: attestation not verified ({:?})",
-            attestation.reason
-        ));
+{
+  "version": "1.0.0",
+  "anyOf": [
+    {
+      "authority": "https://azure.net",
+      "allOf": [
+        {
+          "claim": "x-ms-isolation-tee",
+          "equals": "amd-sev-snp"
+        },
+        {
+          "claim": "x-ms-sevsnp-is-debuggable",
+          "equals": "false"
+        },
+        {
+          "claim": "x-ms-sevsnp-mrenclave",
+          "equals": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "claim": "x-ms-provenanceshield-purpose",
+          "equals": "Non-Military-Defensive-Sandbox"
+        }
+      ]
+    },
+    {
+      "authority": "https://azure.net",
+      "allOf": [
+        {
+          "claim": "x-ms-isolation-tee",
+          "equals": "intel-tdx"
+        },
+        {
+          "claim": "x-ms-tdx-is-debuggable",
+          "equals": "false"
+        },
+        {
+          "claim": "x-ms-tdx-mrownerid",
+          "equals": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        },
+        {
+          "claim": "x-ms-provenanceshield-purpose",
+          "equals": "Non-Military-Defensive-Sandbox"
+        }
+      ]
     }
-
-    // 2. Enforce non-military key-release constraints.
-    if !policy.environment_allowed() {
-        return Err(anyhow!(
-            "Key release denied: environment violates non-military policy"
-        ));
-    }
-
-    // 3. Decrypt the sealed key using enclave-bound sealing keys.
-    let decrypted = decrypt_with_enclave_key(&sealed.encrypted_key)
-        .map_err(|_| anyhow!("Key release failed: enclave decryption error"))?;
-
-    Ok(ReleasedKey { key: decrypted })
-}
-
-/// Placeholder for enclave-bound decryption.
-/// In real deployment, this uses hardware sealing keys (SEV-SNP, TDX, Nitro).
-fn decrypt_with_enclave_key(data: &[u8]) -> Result<Vec<u8>> {
-    // Scaffolding only — real implementation uses TEE sealing keys.
-    Ok(data.to_vec())
+  ]
 }
