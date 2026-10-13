@@ -78,10 +78,20 @@ impl AttestationEngine {
 
     /// Step 3: Decodes and evaluates the cryptographic claims to enforce non-military constraints.
     pub fn verify_provenance_claims(&self, token: &str) -> Result<AzureAttestationClaims, &'static str> {
-        println!("[SECURITY] Parsing cryptographic token claims via PyJWT/jsonwebtoken standard...");
+        println!("[SECURITY] Parsing cryptographic token claims via jsonwebtoken validation matrix...");
         
-        // Fixed: Mapped back to the true native 'dangerous_insecure_decode' API function
-        let token_data = jsonwebtoken::dangerous_insecure_decode::<AzureAttestationClaims>(token)
+        // Configures a standard validation policy matrix for jsonwebtoken v9
+        let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);
+        
+        // Natively bypasses signature verification checks for local enclave processing
+        validation.insecure_disable_signature_validation();
+        validation.validate_exp = false; 
+        validation.required_spec_claims.clear();
+
+        // Under insecure validation, we supply an empty secret key byte array slice safely
+        let key = jsonwebtoken::DecodingKey::from_secret(&[]);
+        
+        let token_data = jsonwebtoken::decode::<AzureAttestationClaims>(token, &key, &validation)
             .map_err(|_| "Cryptographic token structure corrupted or unreadable")?;
             
         let claims = token_data.claims;
@@ -100,3 +110,4 @@ impl AttestationEngine {
         Ok(claims)
     }
 }
+
