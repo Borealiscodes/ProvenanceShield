@@ -1,42 +1,73 @@
-// provenance-shield: tee_interface.rs
-// Hardware TEE interface scaffolding.
-// Defines the boundary for requesting attestation quotes from the underlying TEE.
+// rust-enclave/src/tee_interface.rs
+use std::fs::File;
+use std::os::unix::io::AsRawFd;
+use std::mem::MaybeUninit;
 
-use anyhow::{Result, anyhow};
-use serde::Deserialize;
+// --- NATIVE LINUX KERNEL IOCTL ARCHITECTURE CONFIGURATION ---
+// Definitions derived from the Linux kernel drivers for SEV-SNP and TDX guests.
+const SEV_GUEST_IOC_MAGIC: u8 = b'S';
+const TDX_GUEST_IOC_MAGIC: u8 = b'T';
 
-/// Raw attestation quote returned by the TEE provider.
-/// This is the unverified, hardware-originated identity proof.
-#[derive(Debug, Deserialize)]
-pub struct RawQuote {
-    pub measurement: String,
-    pub platform_info: String,
-    pub nonce: String,
-    pub signature: String,
+// System request sequence macros to trigger cryptographic firmware reports
+const SNP_GET_REPORT_SEQ: u8 = 0x1;
+const TDX_GET_REPORT_SEQ: u8 = 0x2;
+
+/// Memory-aligned structure mapping the exact layout expected by the AMD SEV-SNP firmware.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct SnpReportReq {
+    pub user_data: [u8; 64], // Nonce/Session token to prevent replay attacks
+    pub vmpl: u32,           // Virtual Machine Privilege Level (typically 0 for TEE roots)
+    pub rsvd: [u8; 28],      // Strict memory padding required by hardware alignment specs
 }
 
-/// Request an attestation quote from the underlying TEE.
-/// In real deployment, this will call Azure MAA, SEV-SNP, TDX, or Nitro APIs.
-pub fn request_attestation_quote() -> Result<RawQuote> {
-    // Placeholder scaffolding — real implementation will call vendor SDKs.
-    // This ensures the rest of the system compiles and the interface is stable.
-
-    Ok(RawQuote {
-        measurement: "placeholder-measurement".into(),
-        platform_info: "placeholder-platform".into(),
-        nonce: "placeholder-nonce".into(),
-        signature: "placeholder-signature".into(),
-    })
+/// Memory-aligned structure mapping the exact layout expected by the Intel TDX firmware.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct TdxReportReq {
+    pub report_data: [u8; 64], // High-risk execution telemetry anchor bits
+    pub t rsvd: [u8; 32],       // Padding constraints matching Intel specifications
 }
 
-/// Validate the structure of a raw quote before passing it to attestation.rs.
-/// This prevents malformed or tampered quote objects.
-pub fn validate_quote_structure(quote: &RawQuote) -> Result<()> {
-    if quote.measurement.is_empty() {
-        return Err(anyhow!("Invalid quote: missing measurement"));
+pub struct HardwareInterface;
+
+impl HardwareInterface {
+    /// Executes a low-level Linux ioctl system call to extract the AMD SEV-SNP hardware report.
+    pub unsafe fn request_snp_hardware_report(file: &File, mut request: SnpReportReq) -> Result<[u8; 1128], &'static str> {
+        println!("[KERNEL-IOCTL] Compiling raw memory layout blocks for AMD SEV-SNP...");
+        
+        let mut out_report = MaybeUninit::<[u8; 1128]>::uninit();
+        
+        // Calculate the raw ioctl number based on standard Linux macros (_IOWR)
+        // Magic byte, sequence ID, and memory size calculation
+        let ioctl_num = nix::ioctl_ioc_nr!(SEV_GUEST_IOC_MAGIC, SNP_GET_REPORT_SEQ);
+
+        let fd = file.as_raw_fd();
+        let ret = libc::ioctl(fd, ioctl_num as libc::unsigned_long, &mut request, out_report.as_mut_ptr());
+
+        if ret != 0 {
+            return Err("OS Kernel rejected the SEV-SNP ioctl instruction. Hardware verification aborted.");
+        }
+
+        println!("[KERNEL-IOCTL] Successfully extracted 1128-byte hardware signature from security coprocessor.");
+        Ok(out_report.assume_init())
     }
-    if quote.signature.is_empty() {
-        return Err(anyhow!("Invalid quote: missing signature"));
+
+    /// Executes a low-level Linux ioctl system call to extract the Intel TDX hardware report.
+    pub unsafe fn request_tdx_hardware_report(file: &File, mut request: TdxReportReq) -> Result<[u8; 1024], &'static str> {
+        println!("[KERNEL-IOCTL] Compiling raw memory layout blocks for Intel TDX...");
+        
+        let mut out_report = MaybeUninit::<[u8; 1024]>::uninit();
+        let ioctl_num = nix::ioctl_ioc_nr!(TDX_GUEST_IOC_MAGIC, TDX_GET_REPORT_SEQ);
+
+        let fd = file.as_raw_fd();
+        let ret = libc::ioctl(fd, ioctl_num as libc::unsigned_long, &mut request, out_report.as_mut_ptr());
+
+        if ret != 0 {
+            return Err("OS Kernel rejected the Intel TDX ioctl instruction. Trust domain validation failed.");
+        }
+
+        println!("[KERNEL-IOCTL] Successfully extracted 1024-byte trust domain report from silicon.");
+        Ok(out_report.assume_init())
     }
-    Ok(())
 }
