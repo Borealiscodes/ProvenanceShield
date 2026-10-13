@@ -30,7 +30,7 @@ jobs:
     - name: Compile Hardware Enclave Sandbox
       run: |
         cd rust-enclave
-        cargo build --release --locked
+        cargo build --release
 
     - name: Extract MRENCLAVE Cryptographic Identity
       id: extract_hash
