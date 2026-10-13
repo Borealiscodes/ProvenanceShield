@@ -1,68 +1,232 @@
-# 🛡️ ProvenanceShield: Hardware-Attested Cognitive Boundary Framework
+# 🛡️ ProvenanceShield
 
-[![ProvenanceShield v3.0.0 Static Measurement Pipeline](https://github.com)](https://github.com)
+Hardware‑Attested Cognitive Boundary Framework for Human‑Rights‑Aligned Computation
 
-ProvenanceShield is a zero-trust, self-defending software execution framework engineered to protect human rights defenders (HRDs), investigative researchers, and safety-critical teams from physical tampering, state-sponsored digital coercion, and the dual-use weaponization of advanced computational systems.
+ProvenanceShield is a zero‑trust, self‑defending execution framework engineered for human rights defenders (HRDs), investigative researchers, and safety‑critical open‑science teams operating under coercive, high‑risk geopolitical conditions.  
+It demonstrates how software can cryptographically enforce its intended purpose directly at the silicon level, preventing repurposing, tampering, or dual‑use weaponization.
 
-By fusing the memory isolation properties of **Confidential Computing Hardware Roots of Trust (TEEs)** with non-negotiable geometric and legal invariants, this repository serves as a functional proof-of-concept demonstrating how software can cryptographically defend its own operational purpose directly at the silicon level.
-
----
-
-## 🧭 Hardware Fingerprint & Core Verification Invariants
-
-The current production release of ProvenanceShield is machine-checked, type-safe, and cryptographically pinned to the following deterministic build fingerprint calculated natively on our main repository timeline:
-
-*   **Target Release Version:** `v3.0.0`
-*   **Verified MRENCLAVE Fingerprint:** `e0a24538626b2bf46fa5e194ae6de0e82f2b8b3fca04c0730b0cc77067a2d68e`
-*   **Enforced Intended Purpose Context:** `Non-Military-Defensive-Sandbox`
-*   **Active Hardening Safetynet:** Enforced via strict `--locked` dependency trees and multi-stage container optimization blocks to eliminate supply-chain injection vectors.
+By binding ethical invariants to Confidential Computing Hardware Roots of Trust (TEEs), ProvenanceShield establishes a hardware‑anchored cognitive boundary that cannot be bypassed by hostile hosts, compromised clouds, or state‑level adversaries.
 
 ---
 
-## 🧮 Deep Technical Architecture & Core Modules
+⚙️ Deterministic Hardware Fingerprint & Core Verification Invariants
 
-The framework bridges low-level hardware virtualization layers with high-dimensional matrix processing using a three-tier sandbox design:
+All operational logic is cryptographically pinned to a deterministic enclave identity:
 
-1.  **The Silicon Gatekeeper (`rust-enclave/`):** A hardened Rust subsystem that interacts directly with bare-metal Linux guest device nodes (`/dev/sev-guest` or `/dev/tdx-guest`). It issues raw `ioctl` commands (`0xc0405301` / `0xc0405402`) to extract un-falsifiable hardware-rooted quotes from the CPU security processors. It exchanges these quotes with remote attestation endpoints to verify the workspace safety parameters before releasing cryptographic decryption keys.
-2.  **The Analytical Manifold Engine (`python-engine/`):** Executes complex coordinate transformations inside memory-encrypted space using Singular Value Decomposition (SVD) and soft-thresholding routines. It implements the **Snowman Three-Sphere Manifold Invariant Model**, a state-vector matrix \(X(t) = [M; O; H]\) tracking Mandate, Operational, and Harm sphere radii. If an adversary applies structural compression to the operational environment, the engine triggers an automatic geometric cascade collapse (rm → 0.0, rh → 1.0), instantly halting execution and locking out downstream payload modification.
-3.  **The Tamper-Evident Forensic Ledger (`secure_logging.py`):** Serializes processed telemetry inputs into an append-only, line-delimited ledger. It enforces a strict, recursive cryptographic chain where **Block N** embeds the precise signature hash of **Block N-1**, cross-bound to the active `MRENCLAVE` silicon token and verified via external RFC 3161 Time-Stamp Authority (TSA) DER tokens.
+- Release Version: v3.0.0  
+- Verified MRENCLAVE:  
+  e0a24538626b2bf46fa5e194ae6de0e82f2b8b3fca04c0730b0cc77067a2d68e
+- Enforced Purpose Context: Non-Military-Defensive-Sandbox
+- Supply-Chain Safeguards: Strict --locked dependency trees, multi‑stage container hardening, and deterministic build pipelines.
 
----
-
-## 💡 Geopolitical Context: The Cognitive Dual-Use Crisis
-
-As artificial intelligence systems transition away from naive, statistics-based next-token prediction and migrate toward **high-dimensional spatial tracking, world models, and geometric reasoning**, the vector of technological misuse undergoes an asymmetrical shift. 
-
-### 1. The Weaponization of World Models & Soft Manifolds
-Advanced AI frameworks are moving toward understanding the physical universe through continuous manifold embeddings and soft coordinate mappings. While these tools are built to optimize civil transportation grids, preserve climate boundaries, or track migration vectors under international human rights frameworks, they are **inherently dual-use**. The exact same mathematical models that project humanitarian movement patterns can be lazily refactored into kinetic targeting systems, autonomous drone path-planning matrix arrays, and automated extrajudicial containment networks.
-
-### 2. The Fallacy of Modern Corporate AI Sustainability
-Modern enterprise approaches to AI are built on brute-force, black-box linear architectures. Scaling these giant models requires exponentially expanding, thermodynamically wasteful server centers that directly conflict with long-term climate stability and carbon budgets. The structural unsustainability of these massive neural weights proves that the true horizon of AI cognition lies in structured, resource-efficient geometric reasoning and invariant-bounded localized processing.
-
-### 3. The Failure of Enterprise Support Matrix Profiles
-Independent grassroots researchers, digital forensics labs, and human rights groups cannot count on enterprise software support arrays or corporate platform giants. Corporate architectures treat independent developers with structural indifference, locking mission-critical zero-trust infrastructure behind multi-million dollar software licensing walls. 
-
-Furthermore, cloud platforms routinely facilitate **Dual-Use Laundering**, turning a blind eye to how open-source analytics are co-opted, repackaged, and weaponized by defense contractors. Platforms like GitHub must actively consider the physical nature of the software they host, providing native mechanisms to recognize and honor cryptographic, hardware-enforced ethical perimeters.
+These invariants ensure the framework cannot be silently refactored into offensive, kinetic, or extrajudicial computational roles.
 
 ---
 
-## 👤 Who Can Use This Framework?
+🧱 Architecture Overview
 
-ProvenanceShield is architected as an **Erga Omnes utility**—a structural obligation owed to the protection of human dignity. It provides a court-ready technical framework for:
-*   **Human Rights Defenders (HRDs):** Securely processing and backing up logs tracking transnational repression and border harassment matrices without fear of host server memory snooping.
-*   **Investigative Forensics Labs:** Collecting, verifying, and maintaining an unbroken digital chain of custody that can withstand hostile cross-examination in international courts.
-*   **Open-Science Governance Teams:** Running structural climate-risk projections securely inside hostile or un-vetted hosting clouds.
+ProvenanceShield integrates hardware attestation, geometric safety invariants, and tamper‑evident forensic logging into a three‑tier sandbox:
 
 ---
 
-## 📢 Disclaimer: A Functional Proof-of-Concept
+1. Silicon Gatekeeper (rust-enclave/)
 
-**This repository is a proof-of-concept framework, not an ultimate, single production release.** 
+A hardened Rust subsystem that interfaces directly with bare‑metal TEE device nodes:
 
-It is a prototype built to prove a fundamental technical thesis: **dignity-aligned software can and must defend its own operational parameters directly on the physical processor silicon.** It is not the only version of this architecture that should exist, but it establishes a baseline open-science blueprint. 
+- AMD SEV: /dev/sev-guest  
+- Intel TDX: /dev/tdx-guest
 
-True digital safeguarding requires a complete ecosystem of decentralized, hardware-attested applications that build human rights protections natively into the compiler level, creating an un-bypasable boundary line between civil utility and state-sponsored kinetic violence.
+It issues raw ioctl commands (0xc0405301, 0xc0405402) to extract unforgeable attestation quotes from the CPU security processor.  
+These quotes are verified against remote attestation endpoints before any cryptographic keys are released.
+
+Outcome:  
+Execution is physically bound to a verified enclave identity and an ethical purpose context. If the enclave fingerprint or purpose invariant fails, the system refuses to decrypt or run.
 
 ---
 
-*Historical development lineage profiles tracking previous documentation records are permanently preserved for public compliance auditing under `docs/archive/README_v2.0_archival_snapshot.md`.*
+2. Analytical Manifold Engine (python-engine/)
+
+A memory‑encrypted analytical engine performing high‑dimensional geometric reasoning using:
+
+- Singular Value Decomposition (SVD)  
+- Soft‑thresholding  
+- Structural manifold monitoring
+
+It implements the Snowman Three‑Sphere Invariant Model, a state vector:
+
+\[
+X(t) = [M(t), O(t), H(t)]
+\]
+
+representing:
+
+- M — Mandate sphere (legal/ethical perimeter)  
+- O — Operational sphere (permitted computational space)  
+- H — Harm sphere (risk of coercive or dual‑use deformation)
+
+If an adversary attempts structural compression—e.g., forcing the system into a kinetic or surveillance role—the manifold collapses:
+
+- \( r_M \rightarrow 0.0 \)  
+- \( r_H \rightarrow 1.0 \)
+
+This triggers an immediate geometric cascade halt, locking execution and preventing downstream payload modification.
+
+Outcome:  
+The system mathematically refuses to operate outside its ethical perimeter.
+
+---
+
+3. Tamper‑Evident Forensic Ledger (secure_logging.py)
+
+A cryptographically chained, append‑only ledger that serializes telemetry and analytical outputs.
+
+Each block:
+
+- embeds the signature of the previous block  
+- is bound to the active MRENCLAVE fingerprint  
+- is timestamped via RFC 3161 Time‑Stamp Authority (TSA) DER tokens
+
+Outcome:  
+A court‑ready, tamper‑evident chain of custody suitable for hostile cross‑examination and international human rights investigations.
+
+---
+
+🧭 Why Hardware?
+
+Software‑only trust boundaries fail under coercion.
+
+Human rights defenders and investigative researchers operate in environments where:
+
+- cloud providers may be compromised  
+- host servers may be tampered with  
+- state actors may compel platform access  
+- digital coercion is routine  
+- supply‑chain attacks are common
+
+TEEs provide the only non‑negotiable boundary:
+
+- memory isolation  
+- hardware‑rooted attestation  
+- sealed cryptographic key release  
+- resistance to host OS compromise  
+- verifiable execution identity
+
+ProvenanceShield uses TEEs not for corporate confidentiality, but as ethical governors that enforce purpose at the silicon level.
+
+---
+
+🛡️ Threat Model
+
+ProvenanceShield assumes adversaries with:
+
+1. Physical Access
+- Host server tampering  
+- Cold‑boot memory extraction  
+- Hardware probing  
+- BIOS/UEFI compromise  
+
+2. Digital Access
+- Root‑level host control  
+- Hypervisor compromise  
+- Cloud provider insider threats  
+- Supply‑chain injection  
+
+3. Coercive Access
+- State‑sponsored digital coercion  
+- Forced platform access  
+- Legal or extrajudicial pressure  
+- Infrastructure seizure  
+
+4. Dual‑Use Repurposing
+- Refactoring humanitarian analytics into:  
+  - kinetic targeting systems  
+  - autonomous drone path‑planning  
+  - surveillance grids  
+  - extrajudicial containment networks  
+
+Security Guarantees:
+
+- Enclave identity cannot be spoofed  
+- Purpose context cannot be bypassed  
+- Execution halts under geometric deformation  
+- Logs cannot be silently altered  
+- Key release is physically bound to attestation  
+- Host OS compromise does not grant access  
+
+---
+
+🌍 Geopolitical Context: The Cognitive Dual‑Use Crisis
+
+As AI systems shift toward geometric reasoning and world‑model cognition, the risk of dual‑use weaponization increases dramatically.
+
+1. World Models Are Inherently Dual‑Use
+The same manifold embeddings used for:
+
+- climate modeling  
+- humanitarian migration analysis  
+- civil infrastructure optimization  
+
+can be repurposed for:
+
+- targeting  
+- surveillance  
+- autonomous weapons  
+- coercive border systems  
+
+2. Corporate AI Sustainability Has Collapsed
+Massive neural architectures require:
+
+- thermodynamically unsustainable compute  
+- expanding carbon budgets  
+- centralized cloud dependence  
+
+The future lies in localized, invariant‑bounded, resource‑efficient geometric reasoning—not brute‑force token prediction.
+
+3. Independent Researchers Are Systemically Unsupported
+Human rights groups cannot rely on:
+
+- enterprise licensing  
+- cloud platform neutrality  
+- corporate ethics boards  
+
+ProvenanceShield provides a decentralized, hardware‑attested alternative.
+
+---
+
+👤 Intended Users
+
+ProvenanceShield is an Erga Omnes utility—an obligation owed to the protection of human dignity.
+
+Designed for:
+
+- Human Rights Defenders (HRDs)  
+- Investigative Forensics Labs  
+- Open‑Science Governance Teams  
+- Digital Security Researchers  
+- Cross‑border legal advocates  
+
+Use cases include:
+
+- secure processing of transnational repression logs  
+- maintaining chain‑of‑custody evidence  
+- climate‑risk modeling in hostile clouds  
+- encrypted analytical workflows under coercion  
+
+---
+
+📢 Disclaimer
+
+ProvenanceShield is a functional proof‑of‑concept, not a final production release.
+
+Its purpose is to demonstrate a foundational thesis:
+
+> Software can defend its own ethical perimeter directly on the physical processor silicon.
+
+It establishes a baseline blueprint for dignity‑aligned computation.  
+Future ecosystems should expand, diversify, and decentralize this architecture.
+
+Historical documentation snapshots are preserved under:  
+docs/archive/READMEv2.0archival_snapshot.md
+
+---
+
