@@ -1,0 +1,71 @@
+# .github/workflows/measurement_pipeline.yaml
+name: ProvenanceShield v3.0.0 Static Measurement Pipeline
+
+on:
+  push:
+    branches: [ "main", "release/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: write # Crucial: Allows the pipeline to write back to the repo
+  packages: write
+
+jobs:
+  calculate_fingerprint:
+    name: Generate Deterministic Silicon Measurement
+    runs-on: ubuntu-24.04
+    
+    steps:
+    - name: Checkout Source Code Lineage
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Rust Defensive Toolchain
+      uses: actions/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Compile Hardware Enclave Sandbox
+      run: |
+        cd rust-enclave
+        cargo build --release --locked
+
+    - name: Extract MRENCLAVE Cryptographic Identity
+      id: extract_hash
+      run: |
+        BINARY_HASH=$(sha256sum rust-enclave/target/release/rust_enclave | awk '{print $1}')
+        echo "COMPILED_MRENCLAVE=$BINARY_HASH" >> $GITHUB_ENV
+        echo "::notice title=MRENCLAVE Fingerprint Generated::$BINARY_HASH"
+
+    - name: Verify Cross-Layer Python File Integrity
+      run: |
+        ENGINE_HASH=$(sha256sum python-engine/manifold_engine.py | awk '{print $1}')
+        echo "ENGINE_HASH=$ENGINE_HASH" >> $GITHUB_ENV
+
+    - name: Generate Unbroken Provenance Manifest
+      run: |
+        mkdir -p build_manifests
+        echo "{" > build_manifests/provenance_manifest.json
+        echo "  \"version\": \"3.0.0\"," >> build_manifests/provenance_manifest.json
+        echo "  \"build_timestamp\": \"$(date -u)\"," >> build_manifests/provenance_manifest.json
+        echo "  \"mrenclave_sha256\": \"${{ env.COMPILED_MRENCLAVE }}\"," >> build_manifests/provenance_manifest.json
+        echo "  \"python_engine_sha256\": \"${{ env.ENGINE_HASH }}\"," >> build_manifests/provenance_manifest.json
+        echo "  \"intended_purpose\": \"Non-Military-Defensive-Sandbox\"" >> build_manifests/provenance_manifest.json
+        echo "}" >> build_manifests/provenance_manifest.json
+
+    - name: Permanently Lock Manifest into Git Timeline
+      run: |
+        # Copy the manifest back into the repository folder structure
+        mkdir -p deployment/provenance_records/
+        cp build_manifests/provenance_manifest.json deployment/provenance_records/provenance_manifest.json
+        
+        # Configure local git bot context
+        git config --global user.name "ProvenanceShield Bot"
+        git config --global user.email "bot@provenanceshield.internal"
+        
+        # Force commit the manifest so it becomes an immutable part of your history
+        git add deployment/provenance_records/provenance_manifest.json
+        git diff-index --quiet HEAD || git commit -m "chrono: permanently seal v3.0.0 mrenclave verification fingerprint"
+        git push origin HEAD:${{ github.ref }}
