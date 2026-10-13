@@ -1,5 +1,16 @@
 # README.md — ProvenanceShield
 
+🏗 Under Construction Notice
+
+> ProvenanceShield v3.0 is currently under active construction.  
+> This repository contains partially‑populated modules undergoing refactoring into a full confidential‑computing boundary system.  
+>  
+> Several components — including attestation integration, sealed‑key operations, provenance‑locked CI/CD, and chain‑of‑custody logging — are being upgraded to production‑grade implementations.  
+>  
+> Non‑military constraints, provenance enforcement, and attestation‑gated execution remain the governing invariants throughout development.  
+>  
+> Construction signage will be removed once the v3.0 architecture reaches stability across all enclave, policy, and manifold‑processing layers.
+
 🛡️ Hardware‑Attested, Provenance‑Locked Execution for Human‑Rights Telemetry
 
 ProvenanceShield is a defensive execution framework designed for human‑rights defenders, investigative researchers, and safety‑critical teams operating in hostile or dual‑use environments. It ensures that sensitive telemetry, evidence, and analytical models run only inside verified Trusted Execution Environments (TEEs), preventing tampering, unauthorized compilation, or weaponization.
