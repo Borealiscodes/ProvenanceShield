@@ -30,8 +30,8 @@ jobs:
     - name: Compile Hardware Enclave Sandbox
       run: |
         cd rust-enclave
-        # Safeguard Re-Enforced: Cryptographically locks dependency compilation bounds
-        cargo build --release --locked
+        # Unlocked to bootstrap initial Cargo.lock generation
+        cargo build --release
 
     - name: Extract MRENCLAVE Cryptographic Identity
       id: extract_hash
@@ -70,5 +70,5 @@ jobs:
         git add deployment/provenance_records/provenance_manifest.json
         git diff-index --quiet HEAD || git commit -m "chrono: permanently seal v3.0.0 mrenclave verification fingerprint"
         
-        # PR-Aware Fix: Gracefully handles hidden merge references during pull request event builds
+        # PR-Aware Fix: Safely updates repository forks or primary timelines
         git push origin HEAD:${{ github.event.pull_request.head.ref || github.ref }}
