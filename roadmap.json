@@ -1,0 +1,98 @@
+{
+  "project": "ProvenanceShield",
+  "version": "1.0",
+  "overview": "Hardware‑attested, provenance‑locked execution framework for human‑rights telemetry and dual‑use mitigation.",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Core Enclave Scaffolding",
+      "description": "Implement Rust enclave runtime, TEE interface bindings, attestation request flow, and secure enclave bootstrap.",
+      "status": "planned",
+      "deliverables": [
+        "rust-enclave/src/main.rs",
+        "rust-enclave/src/tee_interface.rs",
+        "rust-enclave/src/attestation.rs"
+      ]
+    },
+    {
+      "id": "M2",
+      "title": "Provenance Enforcement Layer",
+      "description": "Add measurement verification, provenance hashing, key‑release gating, and non‑military policy enforcement.",
+      "status": "planned",
+      "deliverables": [
+        "rust-enclave/src/provenance.rs",
+        "rust-enclave/src/key_release.rs",
+        "enclave-policy/key-release-policy.json"
+      ]
+    },
+    {
+      "id": "M3",
+      "title": "Python Telemetry Engine",
+      "description": "Create encrypted telemetry processor with token validation, safe manifold embedding, and secure logging.",
+      "status": "planned",
+      "deliverables": [
+        "python-engine/manifold_engine.py",
+        "python-engine/token_validation.py",
+        "python-engine/secure_logging.py"
+      ]
+    },
+    {
+      "id": "M4",
+      "title": "Chain-of-Custody Infrastructure",
+      "description": "Implement hash‑chained logs, RFC 3161 timestamping client, and block format specification.",
+      "status": "planned",
+      "deliverables": [
+        "provenance-chain/hash_chain.rs",
+        "provenance-chain/timestamping.rs",
+        "provenance-chain/block_format.md"
+      ]
+    },
+    {
+      "id": "M5",
+      "title": "Enclave Policy Suite",
+      "description": "Provide attestation policies for Azure MAA, SEV‑SNP, Nitro Enclaves, and provenance‑locked execution constraints.",
+      "status": "planned",
+      "deliverables": [
+        "enclave-policy/azure-attestation-policy.json",
+        "enclave-policy/sev-snp-policy.toml",
+        "enclave-policy/nitro-enclave-policy.json"
+      ]
+    },
+    {
+      "id": "M6",
+      "title": "Deployment & CI/CD",
+      "description": "Add enclave‑aware Dockerfiles, CI/CD pipeline with hash measurement, and confidential VM setup guides.",
+      "status": "planned",
+      "deliverables": [
+        "deployment/docker/Dockerfile.enclave",
+        "deployment/ci-cd/pipeline.yaml",
+        "deployment/cloud/azure_setup.md"
+      ]
+    },
+    {
+      "id": "M7",
+      "title": "Documentation Suite",
+      "description": "Publish architecture overview, threat model, dual‑use mitigation policy, attestation flow, and API reference.",
+      "status": "planned",
+      "deliverables": [
+        "docs/architecture-overview.md",
+        "docs/threat-model.md",
+        "docs/dual-use-mitigation.md",
+        "docs/attestation-flow.md"
+      ]
+    }
+  ],
+  "licensing": {
+    "type": "ProvenanceShield Non‑Military License v1.0",
+    "constraints": [
+      "Non‑military use only",
+      "TEE‑verified execution required",
+      "Provenance enforcement must remain intact"
+    ]
+  },
+  "governance": {
+    "dual_use_mitigation": true,
+    "provenance_locked": true,
+    "attestation_required": true
+  }
+}
