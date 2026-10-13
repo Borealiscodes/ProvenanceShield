@@ -43,6 +43,17 @@ COPY --from=builder /usr/src/provenanceshield/rust-enclave/target/release/rust_e
 # Copy the structure-preserving analytical Python engine scripts
 COPY python-engine/ python-engine/
 
+# Copy the automated test framework directly into the staging layer
+COPY deployment/ deployment/
+
+# 🧪 AUTOMATED BOUNDARY VALIDATION PULSE
+# Executes the test harness inside the staging container environment.
+# If an invariant fails, the docker build aborts right here.
+RUN python3 deployment/verification/automated_tests.py -v
+
+# Clean up the test suite from the final image layer to optimize storage
+RUN rm -rf deployment/verification/
+
 # Expose required environment classification assertion flags
 ENV PROVENANCESHIELD_ENVIRONMENT_MODE="Non-Military-Defensive-Sandbox"
 ENV PROVENANCESHIELD_ALLOW_UNRESTRICTED_DEBUG="false"
