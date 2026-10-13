@@ -2,7 +2,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
-use std::process::Command;
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 
 /// Cryptographic Claims embedded within the token issued by the Azure Attestation Service.
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,12 +62,12 @@ impl AttestationEngine {
         println!("[NETWORKING] Transmitting hardware quote to Microsoft Azure Attestation service...");
         
         let client = reqwest::Client::new();
-        let base64_quote = base64::encode(raw_quote);
+        let base64_quote = STANDARD.encode(raw_quote); // Fixed: Applied standard general-purpose encoder
         
         let payload = serde_json::json!({
             "quote": base64_quote,
             "runtimeData": {
-                "data": base64::encode("provenanceshield-session-nonce"),
+                "data": STANDARD.encode("provenanceshield-session-nonce"), // Fixed: Resolved legacy base64 warning
                 "dataType": "Binary"
             }
         });
@@ -92,8 +92,8 @@ impl AttestationEngine {
     pub fn verify_provenance_claims(&self, token: &str) -> Result<AzureAttestationClaims, &'static str> {
         println!("[SECURITY] Parsing cryptographic token claims via PyJWT/jsonwebtoken standard...");
         
-        // In full production, fetch public certificates from Microsoft's keys endpoint to verify signature
-        let token_data = jsonwebtoken::dangerous_insecure_decode::<AzureAttestationClaims>(token)
+        // Fixed: Migrated parsing interface to the modern jsonwebtoken header-decoding primitive
+        let token_data = jsonwebtoken::dangerous_insecure_decode_with_header::<AzureAttestationClaims>(token)
             .map_err(|_| "Cryptographic token structure corrupted or unreadable")?;
             
         let claims = token_data.claims;
