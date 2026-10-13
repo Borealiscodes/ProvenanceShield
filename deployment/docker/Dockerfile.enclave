@@ -1,0 +1,55 @@
+# ==========================================
+# STAGE 1: HARDENED BUILD SANDBOX
+# ==========================================
+FROM rust:1.81-slim-bookworm AS builder
+
+WORKDIR /usr/src/provenanceshield
+
+# Install system dependencies required for static compilation mapping
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy local source file matrices
+COPY rust-enclave/ rust-enclave/
+
+# Execute static release compilation under locked dependency constraints
+RUN cd rust-enclave && cargo build --release --locked
+
+# ==========================================
+# STAGE 2: PRODUCTION RUNTIME ENVIRONMENT
+# ==========================================
+# Use a minimal, hardened base image to reduce the attack surface
+FROM python:3.11-slim-bookworm
+
+WORKDIR /app
+
+# Install runtime dependencies for the Python Manifold Engine layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install isolated math and crypto modules without global system access
+RUN pip install --no-cache-dir \
+    numpy==1.26.4 \
+    pyjwt==2.8.0 \
+    sha256==0.1.1 \
+    cryptography==42.0.5
+
+# Extract the verified binary from the builder layer
+COPY --from=builder /usr/src/provenanceshield/rust-enclave/target/release/rust_enclave ./provenance_guard
+
+# Copy the structure-preserving analytical Python engine scripts
+COPY python-engine/ python-engine/
+
+# Expose required environment classification assertion flags
+ENV PROVENANCESHIELD_ENVIRONMENT_MODE="Non-Military-Defensive-Sandbox"
+ENV PROVENANCESHIELD_ALLOW_UNRESTRICTED_DEBUG="false"
+
+# Set file execution permissions to restrict local tamper vectors
+RUN chmod 500 ./provenance_guard && \
+    chmod 400 python-engine/*.py
+
+# Set the entrypoint to the Rust hardware sandbox initialization loop
+ENTRYPOINT ["./provenance_guard"]
