@@ -1,0 +1,37 @@
+[package]
+name = "rust_enclave"
+version = "3.0.0"
+edition = "2021"
+authors = ["Borealis S. Hedling <dauntless.peace@proton.me>"]
+description = "Hardware-attested security gatekeeper sandbox for ProvenanceShield."
+
+[dependencies]
+# Network Stack for interacting with the Azure Attestation Endpoint
+reqwest = { version = "0.11.24", default-features = false, features = ["json", "rustls-tls"] }
+
+# Cryptographic Token Parsing
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.114"
+jsonwebtoken = "9.2.0"
+
+# Local Symmetric Decryption Vault Primitives (ChaCha20-Poly1305)
+chacha20poly1305 = "0.10.1"
+
+# Hashing and Binary Transformations
+sha2 = "0.10.8"
+hex = "0.4.3"
+base64 = "0.21.7"
+
+# Low-Level Linux Kernel ioctl Mapping Types
+libc = "0.2.153"
+nix = { version = "0.28.0", features = ["ioctl", "user"] }
+
+# Async Runtime Environment Configuration
+tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros", "process"] }
+
+[profile.release]
+opt-level = 3           # Maximize execution optimization parameters
+lto = true              # Enable Link-Time Optimization across all crates
+codegen-units = 1       # Reduce compilation threads to maximize deterministic binary hashing
+panic = "abort"         # Strip out stack unwinding to prevent memory leak profiling
+strip = true            # Completely remove all debug symbols and structural strings
