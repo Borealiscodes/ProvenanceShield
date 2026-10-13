@@ -28,8 +28,8 @@ jobs:
     - name: Compile Hardware Enclave Sandbox
       run: |
         cd rust-enclave
-        # Unlocked to bootstrap initial Cargo.lock generation
-        cargo build --release
+        # Safeguard Re-Enforced: Dependency versions are cryptographically frozen
+        cargo build --release --locked
 
     - name: Extract MRENCLAVE Cryptographic Identity
       id: extract_hash
