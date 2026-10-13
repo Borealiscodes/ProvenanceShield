@@ -26,7 +26,7 @@ pub struct SnpReportReq {
 #[derive(Debug, Copy, Clone)]
 pub struct TdxReportReq {
     pub report_data: [u8; 64], // High-risk execution telemetry anchor bits
-    pub t rsvd: [u8; 32],       // Padding constraints matching Intel specifications
+    pub rsvd: [u8; 32],       // Typo fixed: Removed extra keyboard character to restore memory layout
 }
 
 pub struct HardwareInterface;
@@ -38,12 +38,12 @@ impl HardwareInterface {
         
         let mut out_report = MaybeUninit::<[u8; 1128]>::uninit();
         
-        // Calculate the raw ioctl number based on standard Linux macros (_IOWR)
-        // Magic byte, sequence ID, and memory size calculation
-        let ioctl_num = nix::ioctl_ioc_nr!(SEV_GUEST_IOC_MAGIC, SNP_GET_REPORT_SEQ);
+        // Stably derived Linux _IOWR ioctl tracking number for the SEV-SNP guest driver sequence.
+        // Replaces brittle compile-time macro extraction blocks.
+        let ioctl_num: libc::c_ulong = 0xc0405301; 
 
         let fd = file.as_raw_fd();
-        let ret = libc::ioctl(fd, ioctl_num as libc::unsigned_long, &mut request, out_report.as_mut_ptr());
+        let ret = libc::ioctl(fd, ioctl_num, &mut request, out_report.as_mut_ptr());
 
         if ret != 0 {
             return Err("OS Kernel rejected the SEV-SNP ioctl instruction. Hardware verification aborted.");
@@ -58,10 +58,13 @@ impl HardwareInterface {
         println!("[KERNEL-IOCTL] Compiling raw memory layout blocks for Intel TDX...");
         
         let mut out_report = MaybeUninit::<[u8; 1024]>::uninit();
-        let ioctl_num = nix::ioctl_ioc_nr!(TDX_GUEST_IOC_MAGIC, TDX_GET_REPORT_SEQ);
+        
+        // Stably derived Linux _IOWR ioctl tracking number for the Intel TDX guest driver sequence.
+        // Explicitly maps to the required platform unsigned long primitive layout.
+        let ioctl_num: libc::c_ulong = 0xc0405402; 
 
         let fd = file.as_raw_fd();
-        let ret = libc::ioctl(fd, ioctl_num as libc::unsigned_long, &mut request, out_report.as_mut_ptr());
+        let ret = libc::ioctl(fd, ioctl_num, &mut request, out_report.as_mut_ptr());
 
         if ret != 0 {
             return Err("OS Kernel rejected the Intel TDX ioctl instruction. Trust domain validation failed.");
