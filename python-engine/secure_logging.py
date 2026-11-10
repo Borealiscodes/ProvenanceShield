@@ -1,110 +1,124 @@
-# python-engine/secure_logging.py
-import json
-import time
+# ==========================================================================
+# MODULE: ledger.py (Tamper-Evident SHA-256 Forensic Chain)
+# PROJECT: Borealiscodes / Lean-Hallucination-Guard-Revised
+# PURPOSE: Append-only, hash-chained audit ledger recording allostatic 0x0F
+#          circuit-breaker events, CAUSA scores, and A7.2 triage diagnostics.
+# ==========================================================================
+
 import hashlib
-import urllib.request
-from token_validation import EnclaveTokenValidator
+import json
+import os
+import platform
+import time
+from pathlib import Path
+from typing import Any
 
-class SecureForensicLogger:
-    def __init__(self, token: str, log_file_path: str = "forensic_chain.log"):
-        """
-        Initializes the forensic log loop. Validates token claims to ensure
-        the writer is a verified, hardware-isolated enclave node.
-        """
-        # Validate the token prior to opening the log structure
-        TARGET_MRENCLAVE = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        validator = EnclaveTokenValidator(expected_mrenclave=TARGET_MRENCLAVE)
-        self.verified_claims = validator.verify_provenance_claims(token)
-        
-        self.log_file_path = log_file_path
-        self.enclave_hash = self.verified_claims.get("x-ms-sevsnp-mrenclave") or self.verified_claims.get("x-ms-tdx-mrownerid")
-        self.previous_hash = self._calculate_tail_hash()
 
-    def _calculate_tail_hash(self) -> str:
-        """
-        Reads the last line of the current log file to discover the previous block's hash.
-        If the log file is empty or missing, it initializes the genesis block hash.
-        """
-        try:
-            with open(self.log_file_path, "r") as f:
-                lines = f.readlines()
-                if not lines:
-                    return "0" * 64  # Genesis initialization string
-                last_line = lines[-1].strip()
-                last_block = json.loads(last_line)
-                return last_block["current_block_hash"]
-        except FileNotFoundError:
-            return "0" * 64
+class ForensicChainError(Exception):
+    """Raised when hash-chain verification detects tampering or truncation."""
 
-    def _fetch_rfc3161_timestamp_token(self, payload_hash: str) -> str:
-        """
-        Simulates an external RFC 3161 Time-Stamp Authority (TSA) DER request.
-        Binds the entry to an immutable, cryptographically signed millisecond stamp.
-        """
-        print("[TIMESTAMP] Requesting RFC 3161 DER-encoded evidence signature block...")
-        # Production environments route a binary POST query containing the nonce/hash to a public TSA.
-        # Returning structural placeholder tracking tokens for validation runtime testing.
-        mock_tsa_token = f"MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFAD...[TSA_HASH:{payload_hash[:8]}]"
-        return mock_tsa_token
 
-    def append_forensic_entry(self, data_payload: dict):
+class ForensicAuditLedger:
+    GENESIS_HASH = "0" * 64
+
+    def __init__(self, log_file_path: str = "lhguard_forensic_chain.jsonl"):
+        self.log_path = Path(log_file_path)
+        self.previous_hash = self._recover_tail_hash()
+
+    def _recover_tail_hash(self) -> str:
+        """Reads the final entry in the JSONL ledger to resume hash chaining."""
+        if not self.log_path.exists() or self.log_path.stat().st_size == 0:
+            return self.GENESIS_HASH
+
+        with self.log_path.open("r", encoding="utf-8") as f:
+            last_line = ""
+            for line in f:
+                if line.strip():
+                    last_line = line.strip()
+
+        if not last_line:
+            return self.GENESIS_HASH
+
+        last_block = json.loads(last_line)
+        return str(last_block["current_block_hash"])
+
+    def append_event(
+        self,
+        event_type: str,
+        payload: dict[str, Any],
+        opcode: int = 0x00,
+    ) -> dict[str, Any]:
         """
-        Constructs a new cryptographic log block N, sequentially chaining it to block N-1
-        via an explicit payload compression loop.
+        Appends a hash-chained event block to the ledger and flushes immediately
+        to disk before any os._exit(15) process termination.
         """
-        print(f"[LOG] Initiating chain validation capture. Chaining from N-1: {self.previous_hash[:12]}...")
+        canonical_payload = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        payload_hash = hashlib.sha256(canonical_payload.encode("utf-8")).hexdigest()
 
-        # Normalize entry payload into a deterministic string format
-        payload_string = json.dumps(data_payload, sort_keys=True)
-        payload_hash = hashlib.sha256(payload_string.encode('utf-8')).hexdigest()
-
-        # Request external trusted verification time proof
-        rfc3161_token = self._fetch_rfc3161_timestamp_token(payload_hash)
-
-        # Assemble the immutable architectural log block metadata
-        log_block = {
-            "collection_method": "Rust Native TEE Memory Isolation Capture",
-            "handler_identity": "System_Enclave_Daemon_v1.0.4",
-            "telemetry_payload_hash": payload_hash,
-            "previous_block_hash": self.previous_hash,
-            "device_context": {
-                "host_id": "AZURE-CONF-VM-0042",
-                "os_platform": "linux-x86_64-hardened",
-                "enclave_active": True,
-                "hardware_mrenclave": self.enclave_hash
+        block: dict[str, Any] = {
+            "schema_version": "lhguard-ledger-v1",
+            "unix_timestamp_ns": time.time_ns(),
+            "event_type": event_type,
+            "opcode": f"0x{opcode:02X}",
+            "runtime_context": {
+                "pid": os.getpid(),
+                "platform": platform.platform(),
+                "tee_hardware_attested": False,  # Honest disclosure: software enclave
             },
-            "current_custodian": "Automated_Ingestion_Engine",
-            "operational_purpose": "Forensic Preservation of Violation Evidence",
-            "rfc3161_timestamp_token": rfc3161_token,
-            "unix_time": time.time()
+            "payload": payload,
+            "payload_sha256": payload_hash,
+            "previous_block_hash": self.previous_hash,
         }
 
-        # Calculate the definitive block hash to finalize link binding (Block N Hash)
-        block_bytes = json.dumps(log_block, sort_keys=True).encode('utf-8')
-        current_block_hash = hashlib.sha256(block_bytes).hexdigest()
-        log_block["current_block_hash"] = current_block_hash
+        block_bytes = json.dumps(block, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        current_hash = hashlib.sha256(block_bytes).hexdigest()
+        block["current_block_hash"] = current_hash
 
-        # Append the structural entry to the storage line
-        with open(self.log_file_path, "a") as f:
-            f.write(json.dumps(log_block) + "\n")
+        with self.log_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(block, sort_keys=True) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
 
-        print(f"[SUCCESS] Block N locked and appended. Current Block Hash: {current_block_hash[:12]}")
-        
-        # Advance the local structural pointer pointer tracking sequence
-        self.previous_hash = current_block_hash
+        self.previous_hash = current_hash
+        return block
 
-if __name__ == "__main__":
-    # Test session token containing required hardware purpose claims
-    MOCK_ENCLAVE_TOKEN = (
-        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4LW1zLWlzb2xhdGlvbi10ZWUiOiJhbWQtc2V2LXNu"
-        "cCIsIngtbXMtc2V2c25wLW1yZW5jbGF2ZSI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0"
-        "MzdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJ4LW1zLXByb3ZlbmFuY2VzaGllbGQtcHVy"
-        "cG9zZSI6Ik5vbi1NaWxpdGFyeS1EZWZlbnNpdmUtU2FuZGJveCIsImV4cCI6NDg5NzAzNjAwMH0.mock"
-        "_signature_bits"
-    )
-    
-    logger = SecureForensicLogger(token=MOCK_ENCLAVE_TOKEN)
-    
-    # Process sequential sample blocks to verify hash propagation
-    logger.append_forensic_entry({"target_id": "HRD-0921", "violation_vector": "Interpol Red Notice Abuse"})
-    logger.append_forensic_entry({"target_id": "HRD-0921", "violation_vector": "Digital Surveillance Intercept"})
+    def verify_chain(self) -> tuple[bool, int]:
+        """
+        Re-hashes every block from genesis to tip to verify tamper-evidence.
+        Returns (True, block_count) if intact; raises ForensicChainError if broken.
+        """
+        if not self.log_path.exists():
+            return True, 0
+
+        expected_prev = self.GENESIS_HASH
+        count = 0
+
+        with self.log_path.open("r", encoding="utf-8") as f:
+            for line_num, raw_line in enumerate(f, start=1):
+                line = raw_line.strip()
+                if not line:
+                    continue
+
+                block = json.loads(line)
+                recorded_hash = block.pop("current_block_hash", None)
+
+                if block.get("previous_block_hash") != expected_prev:
+                    raise ForensicChainError(
+                        f"Chain link broken at line {line_num}: previous_block_hash mismatch."
+                    )
+
+                recomputed_bytes = json.dumps(
+                    block, sort_keys=True, separators=(",", ":")
+                ).encode("utf-8")
+                recomputed_hash = hashlib.sha256(recomputed_bytes).hexdigest()
+
+                if recorded_hash != recomputed_hash:
+                    raise ForensicChainError(
+                        f"Block tampering detected at line {line_num}: SHA-256 digest mismatch."
+                    )
+
+                expected_prev = recorded_hash
+                count += 1
+
+        return True, count
+
