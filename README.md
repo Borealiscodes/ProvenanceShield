@@ -1,3 +1,8 @@
+# Disclaimer ⚠️ 
+
+This Framework was developed while facing Transnational Repression it is not appropriately tested or verified for real world use. Currently undergoing study and auditing.
+
+
 # 🛡️ ProvenanceShield
 
 Hardware‑Attested Cognitive Boundary Framework for Human‑Rights‑Aligned Computation
